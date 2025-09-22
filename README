@@ -1,0 +1,26 @@
+
+//B1: Tìm dòng này trong script.js:
+switch (algorithm) {
+    case 'mean':
+        filteredCanvas = await applyMeanFilter(originalImg);
+        break;
+    case 'median':
+        filteredCanvas = await applyMedianFilter(originalImg);  // ← Sửa ở đây
+        break;
+    case 'gaussian':
+        filteredCanvas = await applyGaussianFilter(originalImg); // ← Sửa ở đây
+        break;
+    default:
+        throw new Error(`Unsupported algorithm: ${algorithm}`);
+}
+
+//B2: Thay thế/thêm các hàm vd applyMedianFilter():
+async function applyMedianFilter(imageElement) {
+    // Thay code cũ bằng:
+    const filter = new MedianFilter(5); // Import từ file medianFilter.js
+    return await filter.applyFilter(imageElement);
+}
+
+
+//B3: Thêm script vào index.html vd:
+<script src="medianFilter.js"></script>
