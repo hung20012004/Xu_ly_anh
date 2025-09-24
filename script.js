@@ -6,6 +6,7 @@
 // Global variables
 let currentImageFile = null;
 let meanFilterInstance = null;
+let medianFilterInstance = null;
 
 // Initialize application when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -20,6 +21,8 @@ function initializeApp() {
     
     // Initialize Mean Filter instance với kernel 5x5 để thấy rõ hiệu quả
     meanFilterInstance = new MeanFilter(5); // Thay đổi từ 3 thành 5
+
+    medianFilterInstance = new MedianFilter(5)
     
     // Bind event listeners
     bindEventListeners();
@@ -231,9 +234,16 @@ async function applyMeanFilter(imageElement) {
  * @returns {Promise<HTMLCanvasElement>} - Processed canvas
  */
 async function applyMedianFilter(imageElement) {
-    // TODO: Implement Median Filter
-    console.log('🚧 Median Filter not implemented yet. Using Mean Filter as demo.');
-    return await applyMeanFilter(imageElement);
+    if (!medianFilterInstance) {
+        throw new Error('Median Filter not initialized');
+    }
+
+    const kernelSize = parseInt(document.getElementById('kernelSize').value);
+
+    const filter = new MedianFilter(kernelSize);
+
+    console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Median Filter`);
+    return await filter.applyFilter(imageElement);
 }
 
 /**
