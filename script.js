@@ -23,6 +23,8 @@ function initializeApp() {
     meanFilterInstance = new MeanFilter(5); // Thay đổi từ 3 thành 5
 
     medianFilterInstance = new MedianFilter(5)
+
+    gaussianFilterInstance = new GaussianFilter(2.0);
     
     // Bind event listeners
     bindEventListeners();
@@ -42,6 +44,10 @@ function bindEventListeners() {
     
     // Algorithm selection change
     document.getElementById('algorithmSelect').addEventListener('change', handleAlgorithmChange);
+    
+    document.getElementById('sigmaRange').addEventListener('input', (e) => {
+        document.getElementById('sigmaValue').textContent = e.target.value;
+    });
 }
 
 /**
@@ -139,9 +145,21 @@ function resetProcessedImage() {
  */
 function handleAlgorithmChange(event) {
     const algorithm = event.target.value;
-    console.log(`🔄 Algorithm changed to: ${algorithm}`);
+    const kernelSizeControl = document.getElementById('kernelSizeControl');
+    const sigmaControl = document.getElementById('sigmaControl');
     
-    // Update filter button text based on selected algorithm
+    console.log(`Algorithm changed to: ${algorithm}`);
+    
+    // Hiển thị control phù hợp
+    if (algorithm === 'gaussian') {
+        kernelSizeControl.style.display = 'none';
+        sigmaControl.style.display = 'flex';
+    } else {
+        kernelSizeControl.style.display = 'flex';
+        sigmaControl.style.display = 'none';
+    }
+    
+    // Update button text
     const filterBtn = document.getElementById('filterBtn');
     const algorithmNames = {
         'mean': 'Lọc Trung Bình',
@@ -252,9 +270,16 @@ async function applyMedianFilter(imageElement) {
  * @returns {Promise<HTMLCanvasElement>} - Processed canvas
  */
 async function applyGaussianFilter(imageElement) {
-    // TODO: Implement Gaussian Filter
-    console.log('🚧 Gaussian Filter not implemented yet. Using Mean Filter as demo.');
-    return await applyMeanFilter(imageElement);
+    if (!gaussianFilterInstance) {
+        throw new Error('Gaussian Filter not initialized');
+    }
+
+    // Lấy sigma từ UI
+    const sigma = parseFloat(document.getElementById('sigmaRange').value);
+    const filter = new GaussianFilter(sigma);
+
+    console.log(`Using sigma=${sigma} for Gaussian Filter (auto kernel size: ${filter.kernelSize}x${filter.kernelSize})`);
+    return await filter.applyFilter(imageElement);
 }
 
 /**
@@ -299,7 +324,7 @@ function showProcessingState(isProcessing) {
         const algorithmNames = {
             'mean': 'Lọc Trung Bình',
             'median': 'Lọc Trung Vị',
-            'gaussian': 'Lọc Gaussian'
+            'gaussian': 'Lọc Gaussian',
         };
         
         filterBtn.innerHTML = `<i class="bi bi-magic"></i> Áp dụng ${algorithmNames[algorithm]}`;

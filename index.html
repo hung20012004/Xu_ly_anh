@@ -26,14 +26,20 @@
                     <option value="gaussian">🟢 Lọc Gaussian (Gaussian Filter)</option>
                 </select>
                 
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <label for="kernelSize" style="font-weight: 600; color: #4c1d95;">Kernel Size:</label>
+                <div id="kernelSizeControl" style="display: flex; align-items: center; gap: 1rem;">
+                    <label for="kernelSize" style="font-weight: 600;">Kernel Size:</label>
                     <select class="algorithm-select" id="kernelSize" style="width: 120px;">
                         <option value="3">3x3</option>
                         <option value="5" selected>5x5</option>
                         <option value="7">7x7</option>
                         <option value="9">9x9</option>
                     </select>
+                </div>
+
+                <div id="sigmaControl" style="display: none; align-items: center; gap: 1rem;">
+                    <label for="sigmaRange" style="font-weight: 600;">Sigma (Độ mờ):</label>
+                    <input type="range" id="sigmaRange" min="0.5" max="5" step="0.1" value="2.0" style="width: 120px;">
+                    <span id="sigmaValue">2.0</span>
                 </div>
                 
                 <button class="filter-btn" id="filterBtn" disabled>
@@ -91,8 +97,9 @@
     </div>
 
     <!-- Scripts -->
+    <script src="script.js"></script>
     <script src="./src/meanFilter.js"></script>
     <script src="./src/medianFilter.js"></script>
-    <script src="script.js"></script>
+    <script src="./src/gaussianFilter.js"></script>
 </body>
 </html>
