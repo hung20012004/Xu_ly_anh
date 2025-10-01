@@ -335,7 +335,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 // Hàm helper để test Gaussian  Filter
-function GaussianFilter() {
+function testGaussianFilter() {
     console.log('🧪 Bắt đầu test Gaussian  Filter...');
     
     const filter = new GaussianFilter(2.0); // sigma = 2.0
