@@ -1,74 +1,51 @@
-/**
- * Main Script - Image Noise Filter Application
- * File: script.js
- */
 
-// Global variables
 let currentImageFile = null;
 let meanFilterInstance = null;
 let medianFilterInstance = null;
+let geometricMeanFilterInstance = null;
+let harmonicMeanFilterInstance = null;
+let contraharmonicMeanFilterInstance = null;
 
-// Initialize application when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
 });
 
-/**
- * Initialize the application
- */
 function initializeApp() {
     console.log('🚀 Initializing Image Noise Filter App...');
-    
-    // Initialize Mean Filter instance với kernel 5x5 để thấy rõ hiệu quả
-    meanFilterInstance = new MeanFilter(5); // Thay đổi từ 3 thành 5
 
+    meanFilterInstance = new MeanFilter(5); 
     medianFilterInstance = new MedianFilter(5)
-
     gaussianFilterInstance = new GaussianFilter(2.0);
-    
-    // Bind event listeners
+    geometricMeanFilterInstance = new GeometricMeanFilter(5);
+    harmonicMeanFilterInstance = new HarmonicMeanFilter(5);
+    contraharmonicMeanFilterInstance = new ContraharmonicMeanFilter(5, 1.5);
+
     bindEventListeners();
     
-    console.log('✅ App initialized with 5x5 Mean Filter kernel!');
+    console.log('✅ App initialized with all filters!');
 }
 
-/**
- * Bind all event listeners
- */
 function bindEventListeners() {
-    // File input change event
     document.getElementById('inputImage').addEventListener('change', handleImageUpload);
-    
-    // Filter button click event
     document.getElementById('filterBtn').addEventListener('click', handleFilterApply);
-    
-    // Algorithm selection change
     document.getElementById('algorithmSelect').addEventListener('change', handleAlgorithmChange);
     
     document.getElementById('sigmaRange').addEventListener('input', (e) => {
         document.getElementById('sigmaValue').textContent = e.target.value;
     });
 }
-
-/**
- * Handle image upload
- * @param {Event} event - File input change event
- */
 function handleImageUpload(event) {
     const file = event.target.files[0];
     const label = document.querySelector('.file-input-label');
     
     if (file) {
-        // Validate file type
         if (!file.type.startsWith('image/')) {
             alert('Vui lòng chọn file ảnh hợp lệ!');
             return;
         }
         
-        // Store current file
         currentImageFile = file;
         
-        // Update UI
         const fileName = file.name.length > 20 
             ? file.name.substring(0, 20) + '...' 
             : file.name;
@@ -76,17 +53,12 @@ function handleImageUpload(event) {
         label.innerHTML = `<i class="bi bi-check-circle"></i> ${fileName}`;
         label.style.background = 'linear-gradient(135deg, #10b981, #059669)';
         
-        // Load and display image
         loadImageToDisplay(file);
         
         console.log(`📁 File uploaded: ${file.name} (${formatFileSize(file.size)})`);
     }
 }
 
-/**
- * Load image file and display in original image container
- * @param {File} file - Image file to load
- */
 function loadImageToDisplay(file) {
     const reader = new FileReader();
     
@@ -94,24 +66,19 @@ function loadImageToDisplay(file) {
         const img = document.getElementById('originalImage');
         const placeholder = document.querySelector('#originalImageContainer .placeholder-text');
         
-        // Tạo image object mới để tránh CORS
         const newImg = new Image();
         newImg.onload = function() {
-            // Display original image
             img.src = evt.target.result;
             img.style.display = 'block';
             placeholder.style.display = 'none';
             
-            // Enable filter button
             document.getElementById('filterBtn').disabled = false;
             
-            // Reset processed image
             resetProcessedImage();
             
             console.log('🖼️ Image loaded and displayed');
         };
         
-        // Set crossOrigin để tránh taint canvas nếu có thể
         newImg.crossOrigin = 'anonymous';
         newImg.src = evt.target.result;
     };
@@ -124,9 +91,6 @@ function loadImageToDisplay(file) {
     reader.readAsDataURL(file);
 }
 
-/**
- * Reset processed image display
- */
 function resetProcessedImage() {
     const processedImg = document.getElementById('processedImage');
     const processedPlaceholder = document.querySelector('#processedImageContainer .placeholder-text');
@@ -139,10 +103,6 @@ function resetProcessedImage() {
     `;
 }
 
-/**
- * Handle algorithm selection change
- * @param {Event} event - Select change event
- */
 function handleAlgorithmChange(event) {
     const algorithm = event.target.value;
     const kernelSizeControl = document.getElementById('kernelSizeControl');
@@ -159,12 +119,22 @@ function handleAlgorithmChange(event) {
         sigmaControl.style.display = 'none';
     }
     
-    // Update button text
+
+    const qContainer = document.getElementById('qParameterContainer');
+    if (algorithm === 'contraharmonic') {
+        qContainer.style.display = 'flex';
+    } else {
+        qContainer.style.display = 'none';
+    }
+    
     const filterBtn = document.getElementById('filterBtn');
     const algorithmNames = {
         'mean': 'Lọc Trung Bình',
         'median': 'Lọc Trung Vị', 
-        'gaussian': 'Lọc Gaussian'
+        'gaussian': 'Lọc  Gaussian',
+        'geometric': 'Lọc TB Hình Học',
+        'harmonic': 'Lọc TB Điều Hòa',
+        'contraharmonic': 'Lọc TB Phản Điều Hòa'
     };
     
     if (!filterBtn.disabled) {
@@ -172,9 +142,6 @@ function handleAlgorithmChange(event) {
     }
 }
 
-/**
- * Handle filter application
- */
 async function handleFilterApply() {
     const originalImg = document.getElementById('originalImage');
     const algorithm = document.getElementById('algorithmSelect').value;
@@ -186,13 +153,11 @@ async function handleFilterApply() {
     
     console.log(`🎯 Applying ${algorithm} filter...`);
     
-    // Show processing state
     showProcessingState(true);
     
     try {
         let filteredCanvas;
         
-        // Apply selected filter
         switch (algorithm) {
             case 'mean':
                 filteredCanvas = await applyMeanFilter(originalImg);
@@ -203,11 +168,19 @@ async function handleFilterApply() {
             case 'gaussian':
                 filteredCanvas = await applyGaussianFilter(originalImg);
                 break;
+            case 'geometric':
+                filteredCanvas = await applyGeometricMeanFilter(originalImg);
+                break;
+            case 'harmonic':
+                filteredCanvas = await applyHarmonicMeanFilter(originalImg);
+                break;
+            case 'contraharmonic':
+                filteredCanvas = await applyContraharmonicMeanFilter(originalImg);
+                break;
             default:
                 throw new Error(`Unsupported algorithm: ${algorithm}`);
         }
         
-        // Display processed image
         displayProcessedImage(filteredCanvas);
         
         console.log('✅ Filter applied successfully!');
@@ -215,60 +188,27 @@ async function handleFilterApply() {
     } catch (error) {
         console.error('❌ Error applying filter:', error);
         alert('Lỗi khi xử lý ảnh. Vui lòng thử lại!');
-        
-        // Show error state
         showErrorState();
         
     } finally {
-        // Hide processing state
         showProcessingState(false);
     }
 }
 
-/**
- * Apply Mean Filter
- * @param {HTMLImageElement} imageElement - Original image element
- * @returns {Promise<HTMLCanvasElement>} - Processed canvas
- */
 async function applyMeanFilter(imageElement) {
-    if (!meanFilterInstance) {
-        throw new Error('Mean Filter not initialized');
-    }
-    
-    // Lấy kernel size từ UI
     const kernelSize = parseInt(document.getElementById('kernelSize').value);
-    
-    // Tạo instance mới với kernel size được chọn
     const filter = new MeanFilter(kernelSize);
-    
     console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Mean Filter`);
-    
     return await filter.applyFilter(imageElement);
 }
 
-/**
- * Apply Median Filter (placeholder - implement later)
- * @param {HTMLImageElement} imageElement - Original image element
- * @returns {Promise<HTMLCanvasElement>} - Processed canvas
- */
 async function applyMedianFilter(imageElement) {
-    if (!medianFilterInstance) {
-        throw new Error('Median Filter not initialized');
-    }
-
     const kernelSize = parseInt(document.getElementById('kernelSize').value);
-
     const filter = new MedianFilter(kernelSize);
-
     console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Median Filter`);
     return await filter.applyFilter(imageElement);
 }
 
-/**
- * Apply Gaussian Filter (placeholder - implement later)
- * @param {HTMLImageElement} imageElement - Original image element
- * @returns {Promise<HTMLCanvasElement>} - Processed canvas
- */
 async function applyGaussianFilter(imageElement) {
     if (!gaussianFilterInstance) {
         throw new Error('Gaussian Filter not initialized');
@@ -280,20 +220,40 @@ async function applyGaussianFilter(imageElement) {
 
     console.log(`Using sigma=${sigma} for Gaussian Filter (auto kernel size: ${filter.kernelSize}x${filter.kernelSize})`);
     return await filter.applyFilter(imageElement);
+    console.log('🚧 Gaussian Filter not implemented yet. Using Mean Filter as demo.');
+    return await applyMeanFilter(imageElement);
+
 }
 
-/**
- * Display processed image
- * @param {HTMLCanvasElement} canvas - Processed image canvas
- */
+async function applyGeometricMeanFilter(imageElement) {
+    const kernelSize = parseInt(document.getElementById('kernelSize').value);
+    const filter = new GeometricMeanFilter(kernelSize);
+    console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Geometric Mean Filter`);
+    return await filter.applyFilter(imageElement);
+}
+
+async function applyHarmonicMeanFilter(imageElement) {
+    const kernelSize = parseInt(document.getElementById('kernelSize').value);
+    const filter = new HarmonicMeanFilter(kernelSize);
+    console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Harmonic Mean Filter`);
+    return await filter.applyFilter(imageElement);
+}
+
+async function applyContraharmonicMeanFilter(imageElement) {
+    const kernelSize = parseInt(document.getElementById('kernelSize').value);
+    const Q = parseFloat(document.getElementById('qParameter').value);
+    const filter = new ContraharmonicMeanFilter(kernelSize, Q);
+    console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Contraharmonic Mean Filter with Q=${Q}`);
+    return await filter.applyFilter(imageElement);
+}
+
+
 function displayProcessedImage(canvas) {
     const processedImg = document.getElementById('processedImage');
     const processedPlaceholder = document.querySelector('#processedImageContainer .placeholder-text');
     
-    // Convert canvas to data URL
     const dataURL = canvas.toDataURL('image/png', 0.9);
     
-    // Display processed image
     processedImg.src = dataURL;
     processedImg.style.display = 'block';
     processedPlaceholder.style.display = 'none';
@@ -301,23 +261,17 @@ function displayProcessedImage(canvas) {
     console.log('🖼️ Processed image displayed');
 }
 
-/**
- * Show/hide processing state
- * @param {boolean} isProcessing - Whether to show processing state
- */
 function showProcessingState(isProcessing) {
     const processingIndicator = document.getElementById('processingIndicator');
     const filterBtn = document.getElementById('filterBtn');
     const algorithm = document.getElementById('algorithmSelect').value;
     
     if (isProcessing) {
-        // Show processing state
         processingIndicator.style.display = 'block';
         filterBtn.disabled = true;
         filterBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang xử lý...';
         
     } else {
-        // Hide processing state
         processingIndicator.style.display = 'none';
         filterBtn.disabled = false;
         
@@ -325,15 +279,15 @@ function showProcessingState(isProcessing) {
             'mean': 'Lọc Trung Bình',
             'median': 'Lọc Trung Vị',
             'gaussian': 'Lọc Gaussian',
+            'geometric': 'Lọc Hình Học',
+            'harmonic': 'Lọc Điều Hòa',
+            'contraharmonic': 'Lọc Phản Điều Hòa'
         };
         
         filterBtn.innerHTML = `<i class="bi bi-magic"></i> Áp dụng ${algorithmNames[algorithm]}`;
     }
 }
 
-/**
- * Show error state in processed image container
- */
 function showErrorState() {
     const processedPlaceholder = document.querySelector('#processedImageContainer .placeholder-text');
     
@@ -346,11 +300,6 @@ function showErrorState() {
     document.getElementById('processedImage').style.display = 'none';
 }
 
-/**
- * Format file size for display
- * @param {number} bytes - File size in bytes
- * @returns {string} - Formatted file size
- */
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
     
@@ -361,9 +310,6 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-/**
- * Debug function - Test with sample image
- */
 function debugTestWithSampleImage() {
     console.log('🧪 Creating test image...');
     
