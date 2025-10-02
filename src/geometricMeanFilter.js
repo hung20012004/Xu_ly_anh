@@ -1,14 +1,5 @@
-/**
- * Geometric Mean Filter Implementation
- * Bộ lọc trung bình hình học để giảm nhiễu ảnh
- * File: ./src/geometricMeanFilter.js
- */
-
 class GeometricMeanFilter {
-    /**
-     * Constructor
-     * @param {number} kernelSize - Kích thước kernel (3, 5, 7, 9...)
-     */
+
     constructor(kernelSize = 3) {
         if (kernelSize % 2 === 0) {
             throw new Error('Kernel size phải là số lẻ!');
@@ -17,11 +8,6 @@ class GeometricMeanFilter {
         this.radius = Math.floor(kernelSize / 2);
     }
 
-    /**
-     * Áp dụng bộ lọc trung bình hình học lên ảnh
-     * @param {HTMLImageElement} imageElement - Element ảnh input
-     * @returns {Promise<HTMLCanvasElement>} - Canvas chứa ảnh đã lọc
-     */
     async applyFilter(imageElement) {
         return new Promise((resolve, reject) => {
             try {
@@ -60,13 +46,6 @@ class GeometricMeanFilter {
         });
     }
 
-    /**
-     * Xử lý dữ liệu pixel với thuật toán Geometric Mean Filter
-     * @param {ImageData} imageData - Dữ liệu ảnh để sửa đổi
-     * @param {Uint8ClampedArray} originalData - Dữ liệu ảnh gốc
-     * @param {number} width - Chiều rộng ảnh
-     * @param {number} height - Chiều cao ảnh
-     */
     processImageData(imageData, originalData, width, height) {
         const data = imageData.data;
         const newData = new Uint8ClampedArray(data.length);
@@ -97,22 +76,10 @@ class GeometricMeanFilter {
         console.log('Geometric Mean filter processing completed!');
     }
 
-    /**
-     * Tính giá trị trung bình hình học của các pixel trong kernel
-     * Công thức: G = (a1 * a2 * ... * an)^(1/n)
-     * Sử dụng log để tránh overflow: G = exp(mean(log(values)))
-     * 
-     * @param {Uint8ClampedArray} data - Dữ liệu pixel gốc
-     * @param {number} centerX - Tọa độ X của pixel trung tâm
-     * @param {number} centerY - Tọa độ Y của pixel trung tâm
-     * @param {number} width - Chiều rộng ảnh
-     * @param {number} height - Chiều cao ảnh
-     * @returns {Object} - Giá trị trung bình hình học {r, g, b}
-     */
     calculateGeometricMean(data, centerX, centerY, width, height) {
         let sumLogR = 0, sumLogG = 0, sumLogB = 0;
         let count = 0;
-        const epsilon = 1e-10; // Tránh log(0)
+        const epsilon = 1e-10; 
         
         for (let dy = -this.radius; dy <= this.radius; dy++) {
             for (let dx = -this.radius; dx <= this.radius; dx++) {
@@ -131,16 +98,12 @@ class GeometricMeanFilter {
                 validY = Math.max(0, Math.min(height - 1, validY));
                 
                 const pixelIndex = (validY * width + validX) * 4;
-                
-                // Tính log của từng giá trị (thêm epsilon để tránh log(0))
                 sumLogR += Math.log(data[pixelIndex] + epsilon);
                 sumLogG += Math.log(data[pixelIndex + 1] + epsilon);
                 sumLogB += Math.log(data[pixelIndex + 2] + epsilon);
                 count++;
             }
         }
-        
-        // Geometric mean = exp(mean(log(values)))
         return {
             r: Math.round(Math.exp(sumLogR / count)),
             g: Math.round(Math.exp(sumLogG / count)),
@@ -148,9 +111,7 @@ class GeometricMeanFilter {
         };
     }
 
-    /**
-     * Phương pháp thay thế khi gặp CORS error
-     */
+
     applySimpleFilter(imageElement, canvas, ctx) {
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
