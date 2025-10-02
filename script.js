@@ -165,6 +165,15 @@ async function handleFilterApply() {
             case 'median':
                 filteredCanvas = await applyMedianFilter(originalImg);
                 break;
+            case 'min':
+                filteredCanvas = await applyMinFilter(originalImg);
+                break;
+            case 'max':
+                filteredCanvas = await applyMaxFilter(originalImg);
+                break;
+            case 'midpoint':
+                filteredCanvas = await applyMidPointFilter(originalImg);
+                break;
             case 'gaussian':
                 filteredCanvas = await applyGaussianFilter(originalImg);
                 break;
@@ -206,6 +215,27 @@ async function applyMedianFilter(imageElement) {
     const kernelSize = parseInt(document.getElementById('kernelSize').value);
     const filter = new MedianFilter(kernelSize);
     console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Median Filter`);
+    return await filter.applyFilter(imageElement);
+}
+
+async function applyMinFilter(imageElement) {
+    const kernelSize = parseInt(document.getElementById('kernelSize').value);
+    const filter = new MinFilter(kernelSize);
+    console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Min Filter`);
+    return await filter.applyFilter(imageElement);
+}
+
+async function applyMaxFilter(imageElement) {
+    const kernelSize = parseInt(document.getElementById('kernelSize').value);
+    const filter = new MaxFilter(kernelSize);
+    console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Max Filter`);
+    return await filter.applyFilter(imageElement);
+}
+
+async function applyMidPointFilter(imageElement) {
+    const kernelSize = parseInt(document.getElementById('kernelSize').value);
+    const filter = new MidpointFilter(kernelSize);
+    console.log(`🔧 Using ${kernelSize}x${kernelSize} kernel for Midpoint Filter`);
     return await filter.applyFilter(imageElement);
 }
 
