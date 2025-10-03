@@ -1,16 +1,5 @@
-/**
- * Contraharmonic Mean Filter Implementation
- * Bộ lọc trung bình phản điều hòa để giảm nhiễu muối tiêu
- * File: ./src/contraharmonicMeanFilter.js
- */
-
 class ContraharmonicMeanFilter {
-    /**
-     * Constructor
-     * @param {number} kernelSize - Kích thước kernel (3, 5, 7, 9...)
-     * @param {number} Q - Bậc của bộ lọc (Q > 0: loại nhiễu tiêu, Q < 0: loại nhiễu muối)
-     */
-    constructor(kernelSize = 3, Q = 1.0) {
+   constructor(kernelSize = 3, Q = 1.0) {
         if (kernelSize % 2 === 0) {
             throw new Error('Kernel size phải là số lẻ!');
         }
@@ -19,11 +8,6 @@ class ContraharmonicMeanFilter {
         this.Q = Q;
     }
 
-    /**
-     * Áp dụng bộ lọc trung bình phản điều hòa lên ảnh
-     * @param {HTMLImageElement} imageElement - Element ảnh input
-     * @returns {Promise<HTMLCanvasElement>} - Canvas chứa ảnh đã lọc
-     */
     async applyFilter(imageElement) {
         return new Promise((resolve, reject) => {
             try {
@@ -62,13 +46,6 @@ class ContraharmonicMeanFilter {
         });
     }
 
-    /**
-     * Xử lý dữ liệu pixel với thuật toán Contraharmonic Mean Filter
-     * @param {ImageData} imageData - Dữ liệu ảnh để sửa đổi
-     * @param {Uint8ClampedArray} originalData - Dữ liệu ảnh gốc
-     * @param {number} width - Chiều rộng ảnh
-     * @param {number} height - Chiều cao ảnh
-     */
     processImageData(imageData, originalData, width, height) {
         const data = imageData.data;
         const newData = new Uint8ClampedArray(data.length);
@@ -99,21 +76,11 @@ class ContraharmonicMeanFilter {
         console.log('Contraharmonic Mean filter processing completed!');
     }
 
-    /**
-     * Tính giá trị trung bình phản điều hòa của các pixel trong kernel
-     * Công thức: C_Q = (x1^(Q+1) + x2^(Q+1) + ... + xn^(Q+1)) / (x1^Q + x2^Q + ... + xn^Q)
-     * 
-     * @param {Uint8ClampedArray} data - Dữ liệu pixel gốc
-     * @param {number} centerX - Tọa độ X của pixel trung tâm
-     * @param {number} centerY - Tọa độ Y của pixel trung tâm
-     * @param {number} width - Chiều rộng ảnh
-     * @param {number} height - Chiều cao ảnh
-     * @returns {Object} - Giá trị trung bình phản điều hòa {r, g, b}
-     */
+
     calculateContraharmonicMean(data, centerX, centerY, width, height) {
         let sumPowerQPlus1_R = 0, sumPowerQPlus1_G = 0, sumPowerQPlus1_B = 0;
         let sumPowerQ_R = 0, sumPowerQ_G = 0, sumPowerQ_B = 0;
-        const epsilon = 1e-10; // Tránh chia cho 0
+        const epsilon = 1e-10; 
         
         for (let dy = -this.radius; dy <= this.radius; dy++) {
             for (let dx = -this.radius; dx <= this.radius; dx++) {
@@ -137,7 +104,6 @@ class ContraharmonicMeanFilter {
                 const g = data[pixelIndex + 1] + epsilon;
                 const b = data[pixelIndex + 2] + epsilon;
                 
-                // Tính x^(Q+1) và x^Q
                 sumPowerQPlus1_R += Math.pow(r, this.Q + 1);
                 sumPowerQPlus1_G += Math.pow(g, this.Q + 1);
                 sumPowerQPlus1_B += Math.pow(b, this.Q + 1);
@@ -148,8 +114,6 @@ class ContraharmonicMeanFilter {
             }
         }
         
-        // Contraharmonic mean = sum(x^(Q+1)) / sum(x^Q)
-        // Thêm epsilon vào mẫu số để tránh chia cho 0
         return {
             r: Math.max(0, Math.min(255, Math.round(sumPowerQPlus1_R / (sumPowerQ_R + epsilon)))),
             g: Math.max(0, Math.min(255, Math.round(sumPowerQPlus1_G / (sumPowerQ_G + epsilon)))),
@@ -157,18 +121,11 @@ class ContraharmonicMeanFilter {
         };
     }
 
-    /**
-     * Thay đổi giá trị Q
-     * @param {number} newQ - Giá trị Q mới
-     */
     setQ(newQ) {
         this.Q = newQ;
         console.log(`Q đã được thay đổi thành: ${this.Q}`);
     }
 
-    /**
-     * Phương pháp thay thế khi gặp CORS error
-     */
     applySimpleFilter(imageElement, canvas, ctx) {
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');

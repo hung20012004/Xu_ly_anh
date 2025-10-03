@@ -1,14 +1,4 @@
-/**
- * Harmonic Mean Filter Implementation
- * Bộ lọc trung bình điều hòa để giảm nhiễu ảnh
- * File: ./src/harmonicMeanFilter.js
- */
-
 class HarmonicMeanFilter {
-    /**
-     * Constructor
-     * @param {number} kernelSize - Kích thước kernel (3, 5, 7, 9...)
-     */
     constructor(kernelSize = 3) {
         if (kernelSize % 2 === 0) {
             throw new Error('Kernel size phải là số lẻ!');
@@ -17,11 +7,7 @@ class HarmonicMeanFilter {
         this.radius = Math.floor(kernelSize / 2);
     }
 
-    /**
-     * Áp dụng bộ lọc trung bình điều hòa lên ảnh
-     * @param {HTMLImageElement} imageElement - Element ảnh input
-     * @returns {Promise<HTMLCanvasElement>} - Canvas chứa ảnh đã lọc
-     */
+
     async applyFilter(imageElement) {
         return new Promise((resolve, reject) => {
             try {
@@ -60,13 +46,7 @@ class HarmonicMeanFilter {
         });
     }
 
-    /**
-     * Xử lý dữ liệu pixel với thuật toán Harmonic Mean Filter
-     * @param {ImageData} imageData - Dữ liệu ảnh để sửa đổi
-     * @param {Uint8ClampedArray} originalData - Dữ liệu ảnh gốc
-     * @param {number} width - Chiều rộng ảnh
-     * @param {number} height - Chiều cao ảnh
-     */
+
     processImageData(imageData, originalData, width, height) {
         const data = imageData.data;
         const newData = new Uint8ClampedArray(data.length);
@@ -97,21 +77,11 @@ class HarmonicMeanFilter {
         console.log('Harmonic Mean filter processing completed!');
     }
 
-    /**
-     * Tính giá trị trung bình điều hòa của các pixel trong kernel
-     * Công thức: H = n / (1/x1 + 1/x2 + ... + 1/xn)
-     * 
-     * @param {Uint8ClampedArray} data - Dữ liệu pixel gốc
-     * @param {number} centerX - Tọa độ X của pixel trung tâm
-     * @param {number} centerY - Tọa độ Y của pixel trung tâm
-     * @param {number} width - Chiều rộng ảnh
-     * @param {number} height - Chiều cao ảnh
-     * @returns {Object} - Giá trị trung bình điều hòa {r, g, b}
-     */
+
     calculateHarmonicMean(data, centerX, centerY, width, height) {
         let sumInvR = 0, sumInvG = 0, sumInvB = 0;
         let count = 0;
-        const epsilon = 1e-10; // Tránh chia cho 0
+        const epsilon = 1e-10; 
         
         for (let dy = -this.radius; dy <= this.radius; dy++) {
             for (let dx = -this.radius; dx <= this.radius; dx++) {
@@ -131,7 +101,6 @@ class HarmonicMeanFilter {
                 
                 const pixelIndex = (validY * width + validX) * 4;
                 
-                // Tính nghịch đảo của từng giá trị (thêm epsilon để tránh chia cho 0)
                 sumInvR += 1.0 / (data[pixelIndex] + epsilon);
                 sumInvG += 1.0 / (data[pixelIndex + 1] + epsilon);
                 sumInvB += 1.0 / (data[pixelIndex + 2] + epsilon);
@@ -139,7 +108,6 @@ class HarmonicMeanFilter {
             }
         }
         
-        // Harmonic mean = n / sum(1/xi)
         return {
             r: Math.round(count / sumInvR),
             g: Math.round(count / sumInvG),
@@ -147,9 +115,6 @@ class HarmonicMeanFilter {
         };
     }
 
-    /**
-     * Phương pháp thay thế khi gặp CORS error
-     */
     applySimpleFilter(imageElement, canvas, ctx) {
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
